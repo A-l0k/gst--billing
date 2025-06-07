@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GST Billing - by Alok</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>GST Billing - by Alok</h1>
+
+  <div id="billingForm">
+    <label>Buyer Name: <input type="text" id="buyerName"></label><br/><br/>
+    
+    <fieldset>
+      <legend>GST Details</legend>
+      <label>SGST (%): <input type="number" id="sgst" step="0.01"></label>
+      <label>CGST (%): <input type="number" id="cgst" step="0.01"></label>
+      <label>IGST (%): <input type="number" id="igst" step="0.01"></label>
+    </fieldset><br/>
+
+    <h3>Items</h3>
+    <div id="items"></div>
+    <button onclick="addItem()">Add Item</button><br/><br/>
+
+    <button onclick="saveBill()">Save Bill</button>
+    <button onclick="printBill()">Print Last Bill</button>
+  </div>
+
+  <div id="billOutput"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
