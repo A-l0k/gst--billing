@@ -1,197 +1,136 @@
-let itemIdCounter = 0;
+let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+let billItems = [];
 
-function addItem() {
-  const itemsContainer = document.getElementById('items');
-  const itemDiv = document.createElement('div');
-  itemDiv.className = 'item';
-  itemDiv.id = `item-${itemIdCounter}`;
-
-  itemDiv.innerHTML = `
-    <label>Item Name: <input type="text" class="itemName"></label>
-    <label>Price (per unit): <input type="number" class="itemPrice" step="0.01"></label>
-    <label>Quantity: <input type="number" class="itemQuantity"></label>
-    <label>Discount (%): <input type="number" class="itemDiscount" step="0.01"></label>
-    <button onclick="removeItem(${itemIdCounter})">Remove Item</button>
-  `;
-
-  itemsContainer.appendChild(itemDiv);
-  itemIdCounter++;
+// Populate invoice item dropdown
+function updateInvoiceItemDropdown() {
+  const dropdown = document.getElementById('invoiceItem');
+  dropdown.innerHTML = "";
+  inventory.forEach(item => {
+    let option = document.createElement('option');
+    option.value = item.name;
+    option.textContent = item.name;
+    dropdown.appendChild(option);
+  });
 }
 
-function removeItem(id) {
-  const itemDiv = document.getElementById(`item-${id}`);
-  if (itemDiv) {
-    itemDiv.remove();
+function addToInventory() {
+  const name = document.getElementById('itemName').value;
+  const price = parseFloat(document.getElementById('itemPrice').value);
+  const quantity = parseInt(document.getElementById('itemQuantity').value);
+
+  if (!name || isNaN(price) || isNaN(quantity)) {
+    alert("Please enter all item details.");
+    return;
   }
+
+  let item = inventory.find(i => i.name === name);
+  if (item) {
+    item.stock += quantity;
+    item.price = price; // update price if changed
+  } else {
+    inventory.push({ name, price, stock: quantity });
+  }
+
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+  updateInvoiceItemDropdown();
+  alert(`Added ${quantity} of ${name} to inventory.`);
+}
+
+function addItemToInvoice() {
+  const name = document.getElementById('invoiceItem').value;
+  const quantity = parseInt(document.getElementById('invoiceQuantity').value);
+  const discount = parseFloat(document.getElementById('invoiceDiscount').value) || 0;
+
+  let item = inventory.find(i => i.name === name);
+  if (!item) {
+    alert("Item not found in inventory.");
+    return;
+  }
+
+  if (item.stock < quantity) {
+    alert(`Insufficient stock for ${name}.`);
+    return;
+  }
+
+  billItems.push({ name, price: item.price, quantity, discount });
+  alert(`${name} added to bill.`);
 }
 
 function saveBill() {
-  const buyerName = document.getElementById('buyerName').value;
-  const sgstRate = parseFloat(document.getElementById('sgst').value) || 0;
-  const cgstRate = parseFloat(document.getElementById('cgst').value) || 0;
-  const igstRate = parseFloat(document.getElementById('igst').value) || 0;
+  const gst = parseFloat(document.getElementById('gstPercent').value) || 0;
+  const sgst = parseFloat(document.getElementById('sgstPercent').value) || 0;
+  const cgst = parseFloat(document.getElementById('cgstPercent').value) || 0;
+  const igst = parseFloat(document.getElementById('igstPercent').value) || 0;
 
-  if (!buyerName) {
-    alert('Please enter buyer name.');
-    return;
-  }
-
-  const itemElements = document.querySelectorAll('.item');
-  if (itemElements.length === 0) {
-    alert('Please add at least one item.');
-    return;
-  }
-
-  const items = [];
   let subtotal = 0;
-
-  itemElements.forEach(item => {
-    const name = item.querySelector('.itemName').value;
-    const price = parseFloat(item.querySelector('.itemPrice').value) || 0;
-    const quantity = parseInt(item.querySelector('.itemQuantity').value) || 0;
-    const discountRate = parseFloat(item.querySelector('.itemDiscount').value) || 0;
-
-    const gross = price * quantity;
-    const discount = (gross * discountRate) / 100;
-    const net = gross - discount;
-
-    subtotal += net;
-
-    items.push({
-      name,
-      price: price.toFixed(2),
-      quantity,
-      discountRate,
-      discountAmount: discount.toFixed(2),
-      netAmount: net.toFixed(2)
-    });
-  });
-
-  // Calculate GST
-  const sgstAmount = (subtotal * sgstRate) / 100;
-  const cgstAmount = (subtotal * cgstRate) / 100;
-  const igstAmount = (subtotal * igstRate) / 100;
-  const totalGST = sgstAmount + cgstAmount + igstAmount;
-  const totalAmount = subtotal + totalGST;
-
-  const bill = {
-    buyerName,
-    items,
-    subtotal: subtotal.toFixed(2),
-    sgstRate,
-    sgstAmount: sgstAmount.toFixed(2),
-    cgstRate,
-    cgstAmount: cgstAmount.toFixed(2),
-    igstRate,
-    igstAmount: igstAmount.toFixed(2),
-    totalGST: totalGST.toFixed(2),
-    totalAmount: totalAmount.toFixed(2),
-    dateTime: new Date().toLocaleString()
-  };
-
-  localStorage.setItem('lastBill', JSON.stringify(bill));
-  alert('Bill saved successfully!');
-
-  displayBill(bill);
-}
-
-function displayBill(bill) {
-  let itemsHTML = `<table border="1" cellspacing="0" cellpadding="5">
-    <tr>
-      <th>Item Name</th>
-      <th>Price</th>
-      <th>Qty</th>
-      <th>Discount (%)</th>
-      <th>Discount Amt</th>
-      <th>Net Amt</th>
-    </tr>`;
-
-  bill.items.forEach(item => {
-    itemsHTML += `
-      <tr>
-        <td>${item.name}</td>
-        <td>₹${item.price}</td>
-        <td>${item.quantity}</td>
-        <td>${item.discountRate}%</td>
-        <td>₹${item.discountAmount}</td>
-        <td>₹${item.netAmount}</td>
-      </tr>`;
-  });
-
-  itemsHTML += `</table>`;
-
-  const billHTML = `
-    <h2>Tax Invoice</h2>
-    <p><strong>Buyer Name:</strong> ${bill.buyerName}</p>
-    ${itemsHTML}
-    <p><strong>Subtotal:</strong> ₹${bill.subtotal}</p>
-    <p><strong>SGST (${bill.sgstRate}%):</strong> ₹${bill.sgstAmount}</p>
-    <p><strong>CGST (${bill.cgstRate}%):</strong> ₹${bill.cgstAmount}</p>
-    <p><strong>IGST (${bill.igstRate}%):</strong> ₹${bill.igstAmount}</p>
-    <p><strong>Total GST:</strong> ₹${bill.totalGST}</p>
-    <p><strong>Total Amount:</strong> ₹${bill.totalAmount}</p>
-    <p><strong>Date & Time:</strong> ${bill.dateTime}</p>
+  let invoiceHTML = `
+    <h2 style="text-align: center;">Alok Kirana Store</h2>
+    <p style="text-align: center;">123 Main Street, City, PIN 123456</p>
+    <hr>
+    <p>Date: ${new Date().toLocaleDateString()}</p>
+    <p>Time: ${new Date().toLocaleTimeString()}</p>
+    <hr>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Disc(%)</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
   `;
 
-  const billOutput = document.getElementById('billOutput');
-  billOutput.innerHTML = billHTML;
+  billItems.forEach(item => {
+    const discountedPrice = item.price * (1 - item.discount / 100);
+    const total = discountedPrice * item.quantity;
+    subtotal += total;
+
+    invoiceHTML += `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.quantity}</td>
+        <td>${item.price}</td>
+        <td>${item.discount}</td>
+        <td>${total.toFixed(2)}</td>
+      </tr>
+    `;
+
+    // Reduce stock
+    let stockItem = inventory.find(i => i.name === item.name);
+    stockItem.stock -= item.quantity;
+  });
+
+  localStorage.setItem('inventory', JSON.stringify(inventory));
+
+  const gstAmount = (subtotal * gst) / 100;
+  const sgstAmount = (subtotal * sgst) / 100;
+  const cgstAmount = (subtotal * cgst) / 100;
+  const igstAmount = (subtotal * igst) / 100;
+  const grandTotal = subtotal + gstAmount + sgstAmount + cgstAmount + igstAmount;
+
+  invoiceHTML += `
+      </tbody>
+    </table>
+    <hr>
+    <p>Subtotal: ₹${subtotal.toFixed(2)}</p>
+    <p>GST: ₹${gstAmount.toFixed(2)}</p>
+    <p>SGST: ₹${sgstAmount.toFixed(2)}</p>
+    <p>CGST: ₹${cgstAmount.toFixed(2)}</p>
+    <p>IGST: ₹${igstAmount.toFixed(2)}</p>
+    <hr>
+    <p><strong>Grand Total: ₹${grandTotal.toFixed(2)}</strong></p>
+  `;
+
+  document.getElementById('invoice').innerHTML = invoiceHTML;
+  alert("Bill saved!");
+  billItems = []; // reset bill
 }
 
-function printBill() {
-  const billData = localStorage.getItem('lastBill');
-  if (!billData) {
-    alert('No bill found. Please save a bill first.');
-    return;
-  }
-
-  const bill = JSON.parse(billData);
-
-  // Render the bill exactly as shown in displayBill
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <html>
-    <head>
-      <title>Tax Invoice</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; }
-        table, th, td { border: 1px solid black; }
-        th, td { padding: 8px; text-align: center; }
-        h2 { text-align: center; }
-      </style>
-    </head>
-    <body>
-      <h2>Tax Invoice</h2>
-      <p><strong>Buyer Name:</strong> ${bill.buyerName}</p>
-      <table>
-        <tr>
-          <th>Item Name</th>
-          <th>Price</th>
-          <th>Qty</th>
-          <th>Discount (%)</th>
-          <th>Discount Amt</th>
-          <th>Net Amt</th>
-        </tr>
-        ${bill.items.map(item => `
-          <tr>
-            <td>${item.name}</td>
-            <td>₹${item.price}</td>
-            <td>${item.quantity}</td>
-            <td>${item.discountRate}%</td>
-            <td>₹${item.discountAmount}</td>
-            <td>₹${item.netAmount}</td>
-          </tr>`).join('')}
-      </table>
-      <p><strong>Subtotal:</strong> ₹${bill.subtotal}</p>
-      <p><strong>SGST (${bill.sgstRate}%):</strong> ₹${bill.sgstAmount}</p>
-      <p><strong>CGST (${bill.cgstRate}%):</strong> ₹${bill.cgstAmount}</p>
-      <p><strong>IGST (${bill.igstRate}%):</strong> ₹${bill.igstAmount}</p>
-      <p><strong>Total GST:</strong> ₹${bill.totalGST}</p>
-      <p><strong>Total Amount:</strong> ₹${bill.totalAmount}</p>
-      <p><strong>Date & Time:</strong> ${bill.dateTime}</p>
-    </body>
-    </html>
-  `);
-  printWindow.document.close();
-  printWindow.print();
+function printInvoice() {
+  window.print();
 }
+
+window.onload = updateInvoiceItemDropdown;
