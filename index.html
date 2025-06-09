@@ -1,50 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GST Billing — By Alok</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GST Billing System by Alok</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
-    <h2>Alok Kirana Store</h2>
-    <p>123 Main Street, City, PIN 123456</p>
-    <hr />
-
+  <h2>GST Billing System by Alok</h2>
+  
+  <div>
     <h3>Add Item to Inventory</h3>
-    <input type="text" id="itemName" placeholder="Item Name" />
-    <input type="number" id="itemPrice" placeholder="Price" />
-    <input type="number" id="itemQuantity" placeholder="Quantity" />
+    <input type="text" id="itemBarcode" placeholder="Scan or type barcode" />
+    <input type="text" id="itemName" placeholder="Item Name">
+    <input type="number" id="itemPrice" placeholder="Price">
+    <input type="number" id="itemQuantity" placeholder="Quantity">
     <button onclick="addToInventory()">Add to Inventory</button>
-    <hr />
-
-    <h3>Create Invoice</h3>
-    <div>
-      <label for="invoiceItem">Item:</label>
-      <select id="invoiceItem"></select>
-      <input type="number" id="invoiceQuantity" placeholder="Quantity" />
-      <input type="number" id="invoiceDiscount" placeholder="Discount (%)" />
-      <button onclick="addItemToInvoice()">Add to Bill</button>
-    </div>
-
-    <div>
-      <label for="gstPercent">GST %:</label>
-      <input type="number" id="gstPercent" placeholder="GST %" />
-      <label for="sgstPercent">SGST %:</label>
-      <input type="number" id="sgstPercent" placeholder="SGST %" />
-      <label for="cgstPercent">CGST %:</label>
-      <input type="number" id="cgstPercent" placeholder="CGST %" />
-      <label for="igstPercent">IGST %:</label>
-      <input type="number" id="igstPercent" placeholder="IGST %" />
-    </div>
-
-    <button onclick="saveBill()">Save Bill</button>
-    <button onclick="printInvoice()">Print Invoice</button>
-
-    <div id="invoice"></div>
   </div>
 
-  <script src="script.js"></script>
-</body>
-</html>
+  <hr>
+
+  <h3>Generate Invoice</h3>
+  <select id="invoiceItem"></select>
+  <input type="number" id="invoiceQuantity" placeholder="Quantity">
+  <input type="number" id="invoiceDiscount" placeholder="Discount %">
+  <button onclick="addToInvoice()">Add to Invoice</button>
+
+  <div>
+    <label>SGST %: <input type="number" id="sgstPercent" value="9"></label>
+    <label>CGST %: <input type="number" id="cgstPercent" value="9"></label>
+    <label>IGST %: <input type="number" id="igstPercent" value="0"></label>
+  </div>
+  <button onclick="saveBill()">Save Bill</button>
+  <button onclick="printInvoice()">Print Invoice</button>
+
+  <hr>
+
+  <div id="invoiceSection">
+    <h2>Tax Invoice</h2>
+    <h3>Store Name: Alok Kirana</h3>
+    <p>Address: 123 Main Road, Your City</p>
+    <div id="invoiceDetails"></div>
+    <div id="totalSection"></div>
+  </div>
+
+  <hr>
+
+  <h3>Inventory</h3>
+  <button onclick="toggleInventory()">Show/Hide Inventory</button>
+  <div id="inventorySection" style="display: none;">
+    <table id="inventoryTable">
+      <thead>
+        <tr>
+          <t

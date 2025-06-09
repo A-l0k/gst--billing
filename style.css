@@ -1,53 +1,54 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
-  background: #f9f9f9;
-}
-
-#app {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  margin: auto;
-}
-
-input, select, button {
-  margin: 4px 0;
-  padding: 6px;
-  width: 100%;
-  box-sizing: border-box;
+  padding: 10px;
 }
 
 table {
-  width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  width: 100%;
 }
 
 th, td {
-  border-bottom: 1px dashed #000;
+  border: 1px solid #ddd;
   padding: 4px;
-  text-align: left;
-}
-
-hr {
-  border: none;
-  border-top: 1px dashed #000;
-  margin: 8px 0;
 }
 
 @media print {
-  body {
+  body * {
+    visibility: hidden;
+  }
+
+  #invoiceSection, #invoiceSection * {
+    visibility: visible;
+  }
+
+  #invoiceSection {
+    position: absolute;
+    left: 0;
+    top: 0;
     width: 58mm;
     font-family: monospace;
     font-size: 12px;
-    background: white;
+    line-height: 1.2;
+    color: black;
   }
-  #app {
+
+  #invoiceSection h2, #invoiceSection h3 {
+    text-align: center;
+    margin: 0;
     padding: 0;
-    background: white;
   }
+
+  #invoiceSection table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #invoiceSection table th, #invoiceSection table td {
+    text-align: left;
+    padding: 2px 0;
+  }
+
   button, input, select {
     display: none;
   }
