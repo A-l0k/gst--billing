@@ -1,166 +1,67 @@
-let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-let invoiceItems = [];
+let inventory = {};
 
-function addToInventory() {
-  const barcode = document.getElementById('itemBarcode').value.trim();
-  const name = document.getElementById('itemName').value.trim();
-  const price = parseFloat(document.getElementById('itemPrice').value);
-  const quantity = parseInt(document.getElementById('itemQuantity').value);
-
-  if (!name || isNaN(price) || isNaN(quantity)) {
-    alert("Please enter all item details.");
-    return;
-  }
-
-  let item = inventory.find(i => (barcode && i.barcode === barcode) || i.name === name);
-
-  if (item) {
-    item.stock += quantity;
-    item.price = price;
-    if (barcode) item.barcode = barcode;
-  } else {
-    inventory.push({ barcode, name, price, stock: quantity });
-  }
-
-  localStorage.setItem('inventory', JSON.stringify(inventory));
-  updateInvoiceItemDropdown();
-  updateInventoryTable();
-
-  document.getElementById('itemBarcode').value = '';
-  document.getElementById('itemName').value = '';
-  document.getElementById('itemPrice').value = '';
-  document.getElementById('itemQuantity').value = '';
-}
-
-document.getElementById('itemBarcode').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') {
-    const barcode = e.target.value.trim();
-    let item = inventory.find(i => i.barcode === barcode);
-    if (item) {
-      document.getElementById('itemName').value = item.name;
-      document.getElementById('itemPrice').value = item.price;
-    } else {
-      alert("Item not found. Please fill manually.");
-    }
-  }
-});
-
-function updateInvoiceItemDropdown() {
-  const select = document.getElementById('invoiceItem');
-  select.innerHTML = '';
-  inventory.forEach(item => {
-    let option = document.createElement('option');
-    option.value = item.name;
-    option.text = item.name;
-    select.appendChild(option);
-  });
-}
-
-function addToInvoice() {
-  const selectedItemName = document.getElementById('invoiceItem').value;
-  const quantity = parseInt(document.getElementById('invoiceQuantity').value);
-  const discount = parseFloat(document.getElementById('invoiceDiscount').value) || 0;
-
-  let item = inventory.find(i => i.name === selectedItemName);
-  if (!item || quantity > item.stock) {
-    alert("Invalid item or insufficient stock.");
-    return;
-  }
-
-  invoiceItems.push({
-    name: item.name,
-    price: item.price,
-    quantity,
-    discount
-  });
-
-  item.stock -= quantity;
-  localStorage.setItem('inventory', JSON.stringify(inventory));
-
-  updateInvoiceItemDropdown();
-  updateInvoiceTable();
-  updateInventoryTable();
-}
-
-function updateInvoiceTable() {
-  const detailsDiv = document.getElementById('invoiceDetails');
-  detailsDiv.innerHTML = '';
-  let table = '<table><tr><th>Item</th><th>Price</th><th>Qty</th><th>Discount %</th><th>Total</th></tr>';
-  let subtotal = 0;
-
-  invoiceItems.forEach(item => {
-    let discountedPrice = item.price * (1 - item.discount / 100);
-    let total = discountedPrice * item.quantity;
-    subtotal += total;
-    table += `<tr>
-      <td>${item.name}</td>
-      <td>${item.price}</td>
-      <td>${item.quantity}</td>
-      <td>${item.discount}</td>
-      <td>${total.toFixed(2)}</td>
-    </tr>`;
-  });
-
-  table += '</table>';
-  detailsDiv.innerHTML = table;
-
-  let sgst = subtotal * (parseFloat(document.getElementById('sgstPercent').value) / 100);
-  let cgst = subtotal * (parseFloat(document.getElementById('cgstPercent').value) / 100);
-  let igst = subtotal * (parseFloat(document.getElementById('igstPercent').value) / 100);
-  let grandTotal = subtotal + sgst + cgst + igst;
-
-  const totalSection = document.getElementById('totalSection');
-  totalSection.innerHTML = `
-    <p>Subtotal: ₹${subtotal.toFixed(2)}</p>
-    <p>SGST: ₹${sgst.toFixed(2)}</p>
-    <p>CGST: ₹${cgst.toFixed(2)}</p>
-    <p>IGST: ₹${igst.toFixed(2)}</p>
-    <h3>Grand Total: ₹${grandTotal.toFixed(2)}</h3>
-  `;
-}
-
-function saveBill() {
-  const savedBills = JSON.parse(localStorage.getItem('savedBills')) || [];
-  savedBills.push({
-    items: invoiceItems,
-    date: new Date().toLocaleString()
-  });
-  localStorage.setItem('savedBills', JSON.stringify(savedBills));
-  alert("Bill saved successfully.");
-  invoiceItems = [];
-  updateInvoiceTable();
+function toggleInventory() {
+  const inventoryDiv = document.getElementById('inventory');
+  inventoryDiv.classList.toggle('hidden');
 }
 
 function printInvoice() {
   window.print();
 }
 
-function toggleInventory() {
-  const section = document.getElementById('inventorySection');
-  if (section.style.display === 'none') {
-    updateInventoryTable();
-    section.style.display = 'block';
-  } else {
-    section.style.display = 'none';
+function handleBarcode(event) {
+  const barcode = event.target.value.trim();
+  if (inventory[barcode]) {
+    document.getElementById('itemName').value = inventory[barcode].name;
+    document.getElementById('itemPrice').value = inventory[barcode].price;
   }
 }
 
-function updateInventoryTable() {
-  const tableBody = document.querySelector('#inventoryTable tbody');
-  tableBody.innerHTML = '';
-  inventory.forEach(item => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${item.barcode || '-'}</td>
-      <td>${item.name}</td>
-      <td>${item.price}</td>
-      <td>${item.stock}</td>
-    `;
-    tableBody.appendChild(row);
-  });
+function addItem() {
+  const barcode = document.getElementById('barcode').value.trim();
+  const name = document.getElementById('itemName').value.trim();
+  const price = parseFloat(document.getElementById('itemPrice').value);
+  if (!barcode || !name || isNaN(price)) {
+    alert('Please fill all fields.');
+    return;
+  }
+
+  // Add to inventory
+  inventory[barcode] = { name, price };
+  updateInventoryTable();
+
+  // Add to invoice
+  const invoiceItems = document.getElementById('invoice-items');
+  const itemDiv = document.createElement('div');
+  itemDiv.classList.add('item');
+  itemDiv.innerHTML = `<span>${name}</span><span>$${price.toFixed(2)}</span>`;
+  invoiceItems.appendChild(itemDiv);
+
+  // Update total
+  updateTotal();
+
+  // Clear inputs
+  document.getElementById('barcode').value = '';
+  document.getElementById('itemName').value = '';
+  document.getElementById('itemPrice').value = '';
 }
 
-window.onload = () => {
-  updateInvoiceItemDropdown();
-  updateInventoryTable();
-};
+function updateInventoryTable() {
+  const table = document.getElementById('inventoryTable');
+  table.innerHTML = '';
+  for (const [barcode, item] of Object.entries(inventory)) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${barcode}</td><td>${item.name}</td><td>$${item.price.toFixed(2)}</td>`;
+    table.appendChild(row);
+  }
+}
+
+function updateTotal() {
+  let total = 0;
+  const items = document.querySelectorAll('#invoice-items .item');
+  items.forEach(item => {
+    const priceText = item.querySelector('span:last-child').textContent.replace('$', '');
+    total += parseFloat(priceText);
+  });
+  document.getElementById('total').textContent = total.toFixed(2);
+}

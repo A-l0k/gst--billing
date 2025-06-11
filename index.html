@@ -1,55 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GST Billing System by Alok</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thermal Printer Invoice</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>GST Billing System by Alok</h2>
-  
-  <div>
-    <h3>Add Item to Inventory</h3>
-    <input type="text" id="itemBarcode" placeholder="Scan or type barcode" />
-    <input type="text" id="itemName" placeholder="Item Name">
-    <input type="number" id="itemPrice" placeholder="Price">
-    <input type="number" id="itemQuantity" placeholder="Quantity">
-    <button onclick="addToInventory()">Add to Inventory</button>
-  </div>
+  <h1>Grocery Store Invoice</h1>
+  <div class="container">
+    <!-- Invoice Section -->
+    <div id="invoice" class="invoice">
+      <div class="invoice-header">
+        <strong>Store Name</strong><br>
+        123 Main Street<br>
+        Phone: (123) 456-7890
+      </div>
+      <div id="invoice-items">
+        <!-- Items will be added here -->
+      </div>
+      <div class="invoice-footer">
+        <strong>Total:</strong> $<span id="total">0.00</span>
+      </div>
+    </div>
 
-  <hr>
+    <!-- Controls -->
+    <div class="controls">
+      <button onclick="printInvoice()">🖨️ Print Invoice</button>
+      <button onclick="toggleInventory()">📦 Show/Hide Inventory</button>
+    </div>
 
-  <h3>Generate Invoice</h3>
-  <select id="invoiceItem"></select>
-  <input type="number" id="invoiceQuantity" placeholder="Quantity">
-  <input type="number" id="invoiceDiscount" placeholder="Discount %">
-  <button onclick="addToInvoice()">Add to Invoice</button>
-
-  <div>
-    <label>SGST %: <input type="number" id="sgstPercent" value="9"></label>
-    <label>CGST %: <input type="number" id="cgstPercent" value="9"></label>
-    <label>IGST %: <input type="number" id="igstPercent" value="0"></label>
-  </div>
-  <button onclick="saveBill()">Save Bill</button>
-  <button onclick="printInvoice()">Print Invoice</button>
-
-  <hr>
-
-  <div id="invoiceSection">
-    <h2>Tax Invoice</h2>
-    <h3>Store Name: Alok Kirana</h3>
-    <p>Address: 123 Main Road, Your City</p>
-    <div id="invoiceDetails"></div>
-    <div id="totalSection"></div>
-  </div>
-
-  <hr>
-
-  <h3>Inventory</h3>
-  <button onclick="toggleInventory()">Show/Hide Inventory</button>
-  <div id="inventorySection" style="display: none;">
-    <table id="inventoryTable">
-      <thead>
-        <tr>
-          <t
+    <!-- Inventory -->
+    <div id="inventory" class="hidden">
+      <h3>Inventory Management</h3>
+      <input type="text" id="barcode" placeholder="Scan Barcode or Enter Manually" oninput="handleBarcode(event)">
+      <input type="text" id="itemName" placeholder="Item Name">
+      <input type="number" id="itemPrice" placeholder="Item Price">
+      <button onclick="addItem()">➕ Add Item</but
