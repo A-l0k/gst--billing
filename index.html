@@ -3,24 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Thermal Printer Invoice</title>
+  <title>Kirana Store POS</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Grocery Store Invoice</h1>
+  <h1>Kirana Store POS</h1>
   <div class="container">
     <!-- Invoice Section -->
     <div id="invoice" class="invoice">
       <div class="invoice-header">
         <strong>Store Name</strong><br>
         123 Main Street<br>
-        Phone: (123) 456-7890
+        Phone: (123) 456-7890<br>
+        <span id="invoice-number"></span> | <span id="invoice-date"></span>
       </div>
       <div id="invoice-items">
         <!-- Items will be added here -->
       </div>
       <div class="invoice-footer">
-        <strong>Total:</strong> $<span id="total">0.00</span>
+        <strong>Total:</strong> ₹<span id="total">0.00</span>
       </div>
     </div>
 
@@ -28,6 +29,7 @@
     <div class="controls">
       <button onclick="printInvoice()">🖨️ Print Invoice</button>
       <button onclick="toggleInventory()">📦 Show/Hide Inventory</button>
+      <button onclick="clearInvoice()">🗑️ Clear Invoice</button>
     </div>
 
     <!-- Inventory -->
@@ -36,4 +38,24 @@
       <input type="text" id="barcode" placeholder="Scan Barcode or Enter Manually" oninput="handleBarcode(event)">
       <input type="text" id="itemName" placeholder="Item Name">
       <input type="number" id="itemPrice" placeholder="Item Price">
-      <button onclick="addItem()">➕ Add Item</but
+      <input type="number" id="itemQty" placeholder="Quantity" value="1" min="1">
+      <button onclick="addItemToInvoice()">➕ Add to Invoice</button>
+      <button onclick="addItemToInventory()">💾 Save to Inventory</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Barcode</th>
+            <th>Name</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTable">
+          <!-- Inventory rows here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
